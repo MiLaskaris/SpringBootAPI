@@ -92,7 +92,7 @@ public class MessageController {
 	}
 	
 	@GetMapping(path = "/sentmessages/{username}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('USER')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('GOD')")
 	public List<MessageRequest> getSent(@CurrentUser UserPrincipal currentUser,@PathVariable("username") String username) {
 
 		Optional<User> sender = userRepository.findByUsernameIgnoreCase(username);
