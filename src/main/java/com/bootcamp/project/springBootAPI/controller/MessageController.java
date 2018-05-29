@@ -28,6 +28,7 @@ import com.bootcamp.project.springBootAPI.request.MessageRequest;
 import com.bootcamp.project.springBootAPI.response.ApiResponse;
 import com.bootcamp.project.springBootAPI.security.CurrentUser;
 import com.bootcamp.project.springBootAPI.security.UserPrincipal;
+import com.bootcamp.project.springBootAPI.services.MessageServices;
 
 @RestController
 @RequestMapping("/api/message")
@@ -37,118 +38,48 @@ public class MessageController {
 	private MessageRepository messageRepository;
 
 	@Autowired
+	private MessageServices messageServices;
+
+	@Autowired
 	UserRepository userRepository;
 
 	private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
-	@PostMapping(path ="/send", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(path = "/send", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
-	public ResponseEntity<?> sendmessage(@CurrentUser UserPrincipal currentUser,
+	public ResponseEntity<?> sendMessage(@CurrentUser UserPrincipal currentUser,
 			@RequestBody MessageRequest messageRequest) {
-
-		Optional<User> sender = userRepository.findById(currentUser.getId());
-		Optional<User> receiver = userRepository.findByUsernameIgnoreCase(messageRequest.getReceiver());
-
-		try {
-
-			User send = sender.get();
-			User receive = receiver.get();
-			Message message = new Message(messageRequest.getId(), messageRequest.getMessage(), send, receive);
-
-			messageRepository.save(message);
-
-			return ResponseEntity.ok(new ApiResponse(true, "Message sent successfully"));
-		} catch (Exception e) {
-
-			return new ResponseEntity(new ApiResponse(false, "Invalid request"), HttpStatus.BAD_REQUEST);
-		}
+		return messageServices.sendMessage(currentUser, messageRequest);
 
 	}
 
 	@GetMapping(path = "/sentmessages", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
 	public List<MessageRequest> getSent(@CurrentUser UserPrincipal currentUser) {
+				return messageServices.getSent(currentUser);
+			}
 
-		Optional<User> sender = userRepository.findByUsernameIgnoreCase(currentUser.getUsername());
-		try {
-
-			Set<Message> messages = sender.get().getSentMessage();
-
-			List<MessageRequest> messagesRequest = messages.stream().map(m -> {
-				MessageRequest messageRequest = new MessageRequest();
-				messageRequest.setId(m.getId());
-				messageRequest.setMessage(m.getMessage());
-				messageRequest.setSender(m.getSender().getUsername());
-				messageRequest.setReceiver(m.getReceiver().getUsername());
-				return messageRequest;
-			}).collect(Collectors.toList());
-
-			return messagesRequest;
-
-		} catch (Exception e) {
-			return Collections.emptyList();
-		}
-
-	}
-	
 	@GetMapping(path = "/sentmessages/{username}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('ADMIN') or hasRole('GOD')")
-	public List<MessageRequest> getSent(@CurrentUser UserPrincipal currentUser,@PathVariable("username") String username) {
-
-		Optional<User> sender = userRepository.findByUsernameIgnoreCase(username);
-		try {
-
-			Set<Message> messages = sender.get().getSentMessage();
-
-			List<MessageRequest> messagesRequest = messages.stream().map(m -> {
-				MessageRequest messageRequest = new MessageRequest();
-				messageRequest.setId(m.getId());
-				messageRequest.setMessage(m.getMessage());
-				messageRequest.setSender(m.getSender().getUsername());
-				messageRequest.setReceiver(m.getReceiver().getUsername());
-				return messageRequest;
-			}).collect(Collectors.toList());
-
-			return messagesRequest;
-
-		} catch (Exception e) {
-			return Collections.emptyList();
-		}
-
-	}
+	public List<MessageRequest> getSentMsgByUsername(@CurrentUser UserPrincipal currentUser,
+			@PathVariable("username") String username) {
+		
+			return messageServices.getSentMsgByUsername(username);
+			}
 
 	@GetMapping(path = "/receivedmessages", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
 	public List<MessageRequest> getReceived(@CurrentUser UserPrincipal currentUser) {
 
-		
-		Optional<User> receiver = userRepository.findByUsernameIgnoreCase(currentUser.getUsername());
-		try {
-
-			Set<Message> messages = receiver.get().getReceivedMessage();
-
-			List<MessageRequest> messagesRequest = messages.stream().map(m -> {
-				MessageRequest messageRequest = new MessageRequest();
-				messageRequest.setId(m.getId());
-				messageRequest.setMessage(m.getMessage());
-				messageRequest.setSender(m.getSender().getUsername());
-				messageRequest.setReceiver(m.getReceiver().getUsername());
-				return messageRequest;
-			}).collect(Collectors.toList());
-
-			return messagesRequest;
-
-		} catch (Exception e) {
-			return Collections.emptyList();
-		}
+		return messageServices.getReceived(currentUser);
 
 	}
 
 	@GetMapping(path = "/receivedmessages/{username}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('ADMIN') or hasRole('GOD')")
-	public List<MessageRequest> getReceivedMsgByUsername(@CurrentUser UserPrincipal currentUser, @PathVariable("username") String username) {
+	public List<MessageRequest> getReceivedMsgByUsername(@CurrentUser UserPrincipal currentUser,
+			@PathVariable("username") String username) {
 
-		
 		Optional<User> receiver = userRepository.findByUsernameIgnoreCase(username);
 		try {
 
@@ -171,7 +102,6 @@ public class MessageController {
 
 	}
 
-	
 	@GetMapping(path = "/allmessages", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
 	public List<MessageRequest> getMessageList(@CurrentUser UserPrincipal currentUser) {
