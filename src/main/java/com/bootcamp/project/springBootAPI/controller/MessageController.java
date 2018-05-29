@@ -90,6 +90,32 @@ public class MessageController {
 		}
 
 	}
+	
+	@GetMapping(path = "/sentmessages/{username}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("hasRole('USER')")
+	public List<MessageRequest> getSent(@CurrentUser UserPrincipal currentUser,@PathVariable("username") String username) {
+
+		Optional<User> sender = userRepository.findByUsernameIgnoreCase(username);
+		try {
+
+			Set<Message> messages = sender.get().getSentMessage();
+
+			List<MessageRequest> messagesRequest = messages.stream().map(m -> {
+				MessageRequest messageRequest = new MessageRequest();
+				messageRequest.setId(m.getId());
+				messageRequest.setMessage(m.getMessage());
+				messageRequest.setSender(m.getSender().getUsername());
+				messageRequest.setReceiver(m.getReceiver().getUsername());
+				return messageRequest;
+			}).collect(Collectors.toList());
+
+			return messagesRequest;
+
+		} catch (Exception e) {
+			return Collections.emptyList();
+		}
+
+	}
 
 	@GetMapping(path = "/receivedmessages", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
@@ -118,6 +144,34 @@ public class MessageController {
 
 	}
 
+	@GetMapping(path = "/receivedmessages/{username}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("hasRole('ADMIN') or hasRole('GOD')")
+	public List<MessageRequest> getReceivedMsgByUsername(@CurrentUser UserPrincipal currentUser, @PathVariable("username") String username) {
+
+		
+		Optional<User> receiver = userRepository.findByUsernameIgnoreCase(username);
+		try {
+
+			Set<Message> messages = receiver.get().getReceivedMessage();
+
+			List<MessageRequest> messagesRequest = messages.stream().map(m -> {
+				MessageRequest messageRequest = new MessageRequest();
+				messageRequest.setId(m.getId());
+				messageRequest.setMessage(m.getMessage());
+				messageRequest.setSender(m.getSender().getUsername());
+				messageRequest.setReceiver(m.getReceiver().getUsername());
+				return messageRequest;
+			}).collect(Collectors.toList());
+
+			return messagesRequest;
+
+		} catch (Exception e) {
+			return Collections.emptyList();
+		}
+
+	}
+
+	
 	@GetMapping(path = "/allmessages", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
 	public List<MessageRequest> getMessageList(@CurrentUser UserPrincipal currentUser) {
@@ -160,7 +214,7 @@ public class MessageController {
 	}
 
 	@PostMapping(path = "/updatemessage", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('MOD') or hasRole('GOD') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('GOD') or hasRole('ADMIN')")
 	public ResponseEntity<?> updatemessage(@CurrentUser UserPrincipal currentUser,
 			@RequestBody MessageRequest messageRequest) {
 
