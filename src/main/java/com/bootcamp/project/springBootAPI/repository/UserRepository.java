@@ -23,9 +23,9 @@ public interface UserRepository extends CrudRepository<User, Long> {
 	Boolean existsByUsername(String username);
 
 	Boolean existsByEmail(String email);
-	
-	@Transactional	
+
+	@Transactional
 	@Modifying
-    void deleteById(Long id);
-	
+	void deleteById(Long id);
+
 }

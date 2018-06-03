@@ -12,18 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bootcamp.project.springBootAPI.model.Message;
 import com.bootcamp.project.springBootAPI.model.User;
 
-
-
 @Repository
 public interface MessageRepository extends CrudRepository<Message, Long> {
 	List<Message> findAllBySender(User user);
-	
+
 	List<Message> findAllByReceiver(User user);
-	
-	@Transactional	
+
+	@Transactional
 	@Modifying
-    void deleteById(Long id);
-	
+	void deleteById(Long id);
+
 	@Query("Select m from Message m where m.id = :id")
 	Message findAllByMessageId(@Param("id") Long Id);
 }

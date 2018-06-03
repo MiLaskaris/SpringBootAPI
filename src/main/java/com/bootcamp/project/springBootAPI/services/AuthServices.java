@@ -28,10 +28,10 @@ import com.bootcamp.project.springBootAPI.security.JwtTokenProvider;
 
 @Service
 public class AuthServices {
-	
+
 	public AuthServices() {
 	}
-	
+
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -46,7 +46,7 @@ public class AuthServices {
 
 	@Autowired
 	JwtTokenProvider tokenProvider;
-	
+
 	public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
 
 		Authentication authentication = authenticationManager.authenticate(
@@ -55,9 +55,9 @@ public class AuthServices {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		String jwt = tokenProvider.generateToken(authentication);
-		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));		
+		return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
 	}
-	
+
 	public ResponseEntity<?> registerUser(SignUpRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"), HttpStatus.BAD_REQUEST);
@@ -85,5 +85,5 @@ public class AuthServices {
 
 		return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
 	}
-	
-	}
+
+}

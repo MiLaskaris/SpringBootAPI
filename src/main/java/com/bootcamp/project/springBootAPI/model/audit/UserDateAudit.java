@@ -1,11 +1,12 @@
 package com.bootcamp.project.springBootAPI.model.audit;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @MappedSuperclass
 @JsonIgnoreProperties(value = { "createdBy", "updatedBy" }, allowGetters = true)

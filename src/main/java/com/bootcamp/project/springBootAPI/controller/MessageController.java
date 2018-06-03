@@ -25,7 +25,6 @@ public class MessageController {
 	@Autowired
 	private MessageServices messageServices;
 
-
 	@PostMapping(path = "/send", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	@PreAuthorize("hasRole('USER')")
 	public ResponseEntity<?> sendMessage(@CurrentUser UserPrincipal currentUser,
