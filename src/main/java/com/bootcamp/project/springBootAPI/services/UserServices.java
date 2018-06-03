@@ -42,7 +42,14 @@ public class UserServices {
 	}
 
 	public UserRequest getUserInfo(UserPrincipal currentUser) {
-		UserRequest user = new UserRequest(currentUser.getName(), currentUser.getUsername(), currentUser.getEmail());
+
+		UserRequest user = new UserRequest();
+		user.setName(currentUser.getName());
+		user.setUsername(currentUser.getUsername());
+		user.setEmail(currentUser.getEmail());
+		user.setRoles(currentUser.getAuthorities().stream().map(r -> {
+			return r.getAuthority();
+		}).collect(Collectors.toList()));
 
 		return user;
 
@@ -102,35 +109,32 @@ public class UserServices {
 
 	public ResponseEntity<?> updatePassword(UserPrincipal currentUser, UserRequest passwordRequest) {
 
-		try {
-			if (userRepository.existsByUsername(passwordRequest.getUsername())
-					&& passwordRequest.getPassword() != null) {
+		if (passwordRequest.getPassword().isEmpty()) {
+			return new ResponseEntity(new ApiResponse(false, "Invalid Request"), HttpStatus.BAD_REQUEST);
+		}
+
+		else {
+			try {
 				User user = userRepository.findByUsernameIgnoreCase(currentUser.getUsername()).get();
 
 				user.setPassword(passwordEncoder.encode(passwordRequest.getPassword()));
 
 				userRepository.save(user);
 				return ResponseEntity.ok(new ApiResponse(true, "Password updated succesfully"));
-			} else {
-				return new ResponseEntity(new ApiResponse(false, "The given username doesn't exist"),
-						HttpStatus.BAD_REQUEST);
+			} catch (
+
+			Exception e) {
+				return new ResponseEntity(new ApiResponse(false, "Invalid Request"), HttpStatus.BAD_REQUEST);
 			}
-		} catch (Exception e) {
-			return new ResponseEntity(new ApiResponse(false, "Invalid Request"), HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	public ResponseEntity<?> updateName(UserPrincipal currentUser, UserRequest nameRequest) {
 		try {
-			if (userRepository.existsByUsername(nameRequest.getUsername())) {
-				User user = userRepository.findByUsernameIgnoreCase(currentUser.getUsername()).get();
-				user.setName(nameRequest.getName());
-				userRepository.save(user);
-				return ResponseEntity.ok(new ApiResponse(true, "Name updated succesfully"));
-			} else {
-				return new ResponseEntity(new ApiResponse(false, "The given username doesn't exist"),
-						HttpStatus.BAD_REQUEST);
-			}
+			User user = userRepository.findByUsernameIgnoreCase(currentUser.getUsername()).get();
+			user.setName(nameRequest.getName());
+			userRepository.save(user);
+			return ResponseEntity.ok(new ApiResponse(true, "Name updated succesfully"));
 		} catch (Exception e) {
 			return new ResponseEntity(new ApiResponse(false, "Invalid request"), HttpStatus.BAD_REQUEST);
 		}

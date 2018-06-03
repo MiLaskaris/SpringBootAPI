@@ -40,7 +40,7 @@ public class UserController {
 	}
 
 	@GetMapping(path = "/rolelist", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('ADMIN') or hasRole('GOD')")
+	@PreAuthorize("hasRole('USER')")
 	public List<UserRequest> getUserList(@CurrentUser UserPrincipal currentUser) {
 
 		return userServices.getUserList();
