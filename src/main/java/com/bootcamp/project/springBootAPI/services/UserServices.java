@@ -109,8 +109,7 @@ public class UserServices {
 
 	public ResponseEntity<?> updatePassword(UserPrincipal currentUser, UserRequest passwordRequest) {
 
-		if (passwordRequest.getPassword().length() > 5 && passwordRequest.getPassword().length() < 101
-				&& passwordRequest.getPassword() != null) {
+		if (passwordRequest.getPassword().length() > 5 && passwordRequest.getPassword().length() < 101) {
 			User user = userRepository.findByUsernameIgnoreCase(currentUser.getUsername()).get();
 
 			user.setPassword(passwordEncoder.encode(passwordRequest.getPassword()));
@@ -118,20 +117,20 @@ public class UserServices {
 			userRepository.save(user);
 			return ResponseEntity.ok(new ApiResponse(true, "Password updated succesfully"));
 		} else {
-			return new ResponseEntity(new ApiResponse(false, "The given username doesn't exist"),
+			return new ResponseEntity(new ApiResponse(false, "Invalid Request"),
 					HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	public ResponseEntity<?> updateName(UserPrincipal currentUser, UserRequest nameRequest) {
 		
-		if (nameRequest.getName().length() < 41 && nameRequest.getName().length() > 3 && nameRequest.getName() != null) {
+		if (nameRequest.getName().length() < 41 && nameRequest.getName().length() > 3) {
 			User user = userRepository.findByUsernameIgnoreCase(currentUser.getUsername()).get();
 			user.setName(nameRequest.getName());
 			userRepository.save(user);
 			return ResponseEntity.ok(new ApiResponse(true, "Name updated succesfully"));
 		} else {
-			return new ResponseEntity(new ApiResponse(false, "The given username doesn't exist"),
+			return new ResponseEntity(new ApiResponse(false, "Invalid Request"),
 					HttpStatus.BAD_REQUEST);
 		}
 	}
